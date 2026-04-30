@@ -8,7 +8,6 @@ library(lubridate)
 select <- dplyr::select
 filter <- dplyr::filter
 
-
 ##### Initial Data Processing and Cleaning #####
 
 # Format Met Data #
@@ -357,7 +356,7 @@ a_e.15_25.full %>%
     plot.tag = element_text(size = 30, face = "bold")
   )
 
-# 2024 A&E, temp trends #
+# 2025 A&E, temp trends #
 
 ae_full_2024 <- a_e.15_25.full %>%
   filter(year(Date) == 2025, month(Date) %in% c(6, 7, 8, 9))
