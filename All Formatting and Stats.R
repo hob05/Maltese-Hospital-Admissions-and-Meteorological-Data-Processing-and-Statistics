@@ -330,4 +330,64 @@ a_e.15_25.full <- a_e.mort.13_25.full %>%
 mort.13_25.full <- a_e.mort.13_25.full %>%
   filter(`Type of Admission` == "Total Deaths") %>%
   select(!`Type of Admission`) %>%
-  rename("n_deaths" = Value)
+  rename("n_deaths" = Value) 
+
+##### Plots #####
+# temp by year #
+a_e.15_25.full %>%
+  group_by(Year = year(Date)) %>%         
+  summarise(
+    mean_temp = mean(MaxT, na.rm = TRUE),
+    se = sd(MaxT, na.rm = TRUE) / sqrt(n()),
+    lower = mean_temp - 1.96 * se,
+    upper = mean_temp + 1.96 * se
+  ) %>%
+  ggplot(aes(x = Year, y = mean_temp)) +
+  geom_line() +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2) +
+  scale_x_continuous(breaks = seq(2015, 2025, by = 1)) + 
+  labs(
+    x = "Year",
+    y = "Mean Maximum Temperature (°C)",
+    tag = "A"
+  ) +
+  theme_bw() +
+  theme(
+    plot.tag = element_text(size = 30, face = "bold")
+  )
+
+# 2024 A&E, temp trends #
+
+ae_full_2024 <- a_e.15_25.full %>%
+  filter(year(Date) == 2025, month(Date) %in% c(6, 7, 8, 9))
+
+temp_scale <- max(ae_full_2024$n_ae, na.rm = TRUE) / max(ae_full_2024$MaxT, na.rm = TRUE)
+
+ae_full_2024 %>%
+  ggplot(aes(x = Date)) +
+  geom_line(aes(y = n_ae, colour = "A&E Attendances"), linewidth = 1) +
+  geom_line(aes(y = MaxT * temp_scale, colour = "Max Temperature"),
+            linetype = "dashed", linewidth = 1) +
+  scale_y_continuous(
+    name = "Number of A&E Attendances",
+    sec.axis = sec_axis(~ . / temp_scale, name = "Maximum Temperature (°C)"),
+    breaks = seq(320, 500, by = 10)
+  ) +
+  scale_x_date(date_labels = "%b",
+               date_breaks = "1 month") +
+  scale_colour_manual(values = c("A&E Attendances" = "steelblue",
+                                 "Max Temperature" = "orange")) +
+  labs(
+    x = "Month",
+    colour = NULL,
+    tag = "B") +
+  theme_bw() +
+  theme(
+    axis.title.y.right = element_text(colour = "orange"),
+    axis.text.y.right  = element_text(colour = "orange"),
+    axis.title.y.left  = element_text(colour = "steelblue"),
+    axis.text.y.left   = element_text(colour = "steelblue"),
+    legend.position = "bottom",
+    plot.tag = element_text(size = 30, face = "bold")  
+  )                               
